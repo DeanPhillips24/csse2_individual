@@ -21,10 +21,17 @@ font-style: italic;
 color: light-grey;
 }
 
+@font-face {
+  font-family: "Pokemon-DP-Pro";
+  src: url("{{ site.baseurl }}/_sass/minima/pokemon-dp-pro.ttf") format(truetype);
+  font-weight: normal;
+  font-style: normal;
+}
+
 .page-content {
   -webkit-font-smoothing: antialiased !important;
   text-rendering: optimizeLegibility !important;
-  font-family: "Segoe UI", SegoeUI, Roboto, "Segoe WP", "Helvetica Neue", "Helvetica", "Tahoma", "Arial", sans-serif !important;
+  font-family: "Pokemon-DP-Pro", Segoe UI, SegoeUI, Roboto, "Segoe WP", "Helvetica Neue", "Helvetica", "Tahoma", "Arial", sans-serif !important;
 }
 
 // make non-headings slightly lighter
