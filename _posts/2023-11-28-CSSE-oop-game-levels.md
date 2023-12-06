@@ -31,9 +31,9 @@ image: /images/mario/hills.png
 
 <script type="module">
     // Imports
-    import GameEnv from '{{site.baseurl}}/assets/js/mario/GameEnv.js';
-    import GameLevel from '{{site.baseurl}}/assets/js/mario/GameLevel.js';
-    import GameControl from '{{site.baseurl}}/assets/js/mario/GameControl.js';
+    import GameEnv from '{{site.baseurl}}/assets/js/GameEnv.js';
+    import GameLevel from '{{site.baseurl}}/assets/js/GameLevel.js';
+    import GameControl from '{{site.baseurl}}/assets/js/GameControl.js';
 
 
     /*  ==========================================
@@ -47,7 +47,7 @@ image: /images/mario/hills.png
         tube: { src: "/images/mario/tube.png" },
       },
       platforms: {
-        grass: { src: "/images/mariograss.png" },
+        grass: { src: "/images/mario/grass.png" },
         alien: { src: "/images/mario/alien.png" }
       },
       backgrounds: {
@@ -69,17 +69,6 @@ image: /images/mario/hills.png
           s: {  },
           d: { row: 2, frames: 4, idleFrame: { column: 1, frames: 0 } }
         },
-        monkey: {
-          src: "/images/mario/monkey.png",
-          width: 40,
-          height: 40,
-          w: { row: 9, frames: 15 },
-          wa: { row: 9, frames: 15 },
-          wd: { row: 9, frames: 15 },
-          a: { row: 1, frames: 15, idleFrame: { column: 7, frames: 0 } },
-          s: { row: 12, frames: 15 },
-          d: { row: 0, frames: 15, idleFrame: { column: 7, frames: 0 } }
-        }
       }
     };
 
