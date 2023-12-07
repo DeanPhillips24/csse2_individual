@@ -28,4 +28,13 @@ export class PlatformO extends GameObject {
    this.bottom = platformY;
    this.collisionHeight = scaledHeight;
    this.collisionWidth = scaledWidth;
-   // unfinished
+   
+   //this.canvas.width = this.width; 
+        //this.canvas.height = this.height;
+        this.canvas.style.width = `{scaledHeight}px`;
+        this.canvas.style.position = 'absolute';
+        this.canvas.style.left = `{platformY}px`; 
+    }
+}
+
+export default PlatformO;
