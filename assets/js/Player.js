@@ -120,6 +120,44 @@ export class Player extends Character{
             this.setAnimation(this.stashFrame);
         }
 
+        if (this.collisionData.touchPoints.other.id === "jumpPlatform") {
+            // Collision with the left side of the Platform
+            console.log("id")
+            if (this.collisionData.touchPoints.other.left && (this.topOfPlatform === true)) {
+                this.movement.right = false;
+                console.log("a")
+            }
+            // Collision with the right side of the platform
+            if (this.collisionData.touchPoints.other.right && (this.topOfPlatform === true)) {
+                this.movement.left = false;
+                console.log("b")
+            }
+            // Collision with the top of the player
+            if (this.collisionData.touchPoints.this.ontop) {
+                this.gravityEnabled = false;
+                console.log("c")
+            }
+            if (this.collisionData.touchPoints.this.bottom) {
+                this.gravityEnabled = false;
+                console.log("d")
+            }
+            if (this.collisionData.touchPoints.this.top) {
+                this.gravityEnabled = false;
+                this.topOfPlatform = true; 
+                console.log(this.topOfPlatform + "top")
+                console.log(this.gravityEnabled + "grav")
+                //console.log("e");
+
+                this.topOfPlatform = false;
+        this.movement.left = true;
+        this.movement.right = true;
+        this.movement.down = true;
+        this.gravityEnabled = true;
+            }
+        }
+
+        
+
         // Perform super update actions
         super.update();
 
@@ -183,5 +221,7 @@ export function initPlayer(canvas, image, gameSpeed, speedRatio){
     // Player Object
     return player;
 }
+
+
 
 export default Player;

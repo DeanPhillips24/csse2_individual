@@ -34,6 +34,7 @@ image: /images/mario/hills.png
     import GameEnv from '{{site.baseurl}}/assets/js/GameEnv.js';
     import GameLevel from '{{site.baseurl}}/assets/js/GameLevel.js';
     import GameControl from '{{site.baseurl}}/assets/js/GameControl.js';
+    import goomba from '{{ site.baseurl }}/assets/js/Goomba.js';
 
 
     /*  ==========================================
@@ -43,12 +44,22 @@ image: /images/mario/hills.png
 
     // Define assets for the game
     var assets = {
+      enemies: {
+        goomba: {
+          src: "/images/mario/goomba.png",
+          width: 448,
+          hegiht: 452,
+        }
+      },
       obstacles: {
         tube: { src: "/images/mario/tube.png" },
       },
       platforms: {
         grass: { src: "/images/mario/grass.png" },
-        alien: { src: "/images/mario/alien.png" }
+        alien: { src: "/images/mario/alien.png" },
+      },
+      platformO: {
+        grass: {src: "/images/mario/brick_wall.png"},
       },
       backgrounds: {
         start: { src: "/images/gameimages/antoine.jpg" },
@@ -68,8 +79,11 @@ image: /images/mario/hills.png
           a: { row: 1, frames: 4, idleFrame: { column: 1, frames: 0 } },
           s: {  },
           d: { row: 2, frames: 4, idleFrame: { column: 1, frames: 0 } }
-        },
-      }
+        }
+      },
+      things: {
+        coin: {src: "/images/gameimages/Coin.png"},
+      },
     };
 
     // add File to assets, ensure valid site.baseurl
@@ -152,7 +166,7 @@ image: /images/mario/hills.png
     new GameLevel( {tag: "start", callback: startGameCallback } );
     new GameLevel( {tag: "home", background: assets.backgrounds.start, callback: homeScreenCallback } );
     // Game screens
-    new GameLevel( {tag: "hills", background: assets.backgrounds.hills, platform: assets.platforms.grass, player: assets.players.mario, tube: assets.obstacles.tube, callback: testerCallBack } );
+    new GameLevel( {tag: "hills", background: assets.backgrounds.hills, platform: assets.platforms.grass, assets.platformO.grass, player: assets.players.mario, enemy: assets.enemies.goomba, tube: assets.obstacles.tube, callback: testerCallBack, thing: assets.thing.coin, } );
     new GameLevel( {tag: "alien", background: assets.backgrounds.planet, platform: assets.platforms.alien, player: assets.players.monkey, callback: testerCallBack } );
     // Game Over screen
     new GameLevel( {tag: "end", background: assets.backgrounds.end, callback: gameOverCallBack } );
