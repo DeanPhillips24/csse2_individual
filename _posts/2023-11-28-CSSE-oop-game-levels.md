@@ -70,11 +70,11 @@ image: /images/mario/hills.png
       },
       players: {
         mario: {
-          src: "/images/gameimages/lopezspritesheet3.png",
+          src: "/images/gameimages/lopezanimation.png",
           width: 46,
           height: 52.5,
           w: { row: 3, frames: 4 },
-          wa: {}, // no action
+          wa: { idleFrame: {column: 1, frames: 0} }, // no action
           wd: {}, // no action
           a: { row: 1, frames: 4, idleFrame: { column: 1, frames: 0 } },
           s: {  },
@@ -179,6 +179,36 @@ image: /images/mario/hills.png
     // create listeners
     toggleCanvasEffect.addEventListener('click', GameEnv.toggleInvert);
     window.addEventListener('resize', GameEnv.resize);
+
+    // Check if buttons are pressed
+    function checkButtonsPressed() {
+      const keysPressed = Object.keys(GameEnv.player.pressedKeys);
+      return keysPressed.length > 0;
+    }
+
+    // Modification to game loop
+    function gameLoop() {
+      // Check if any buttons are pressed
+      const buttonsPressed = checkButtonsPressed();
+
+      // Determine the frame based on button state
+      let frame;
+      if(buttonssPressed) {
+        // Logic to determine the frame when button is being pressed
+        const currentKey = Object.keys(GameEnv.player.pressedKeys)[0];
+
+        // Use animation frame based on key pressed
+        frame = GameEnv.currentLevel.player.playerData[currentKey].idleFrame || GameEnv.currentLevel.player.playerData[currentKey].frames[0];
+      } else {
+        frame = GameEnv.currentLevel.player.wa.idleFrame;
+      }
+      
+      // Update player frame
+      GameEnv.currentLevel.player.currentFrame = frame;
+
+      // Repeat game loop
+      requestAnimationFrame(gameLoop);
+      }
 
     // start game
     GameControl.gameLoop();
