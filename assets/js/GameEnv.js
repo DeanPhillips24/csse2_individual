@@ -4,8 +4,11 @@ export class GameEnv {
     static player = null;
     static levels = [];
     static gameObjects = [];
+    static enemies = [];
 
     // game attributes
+    static backgroundSpeed = 0
+    static backgroundSpeed2 = 0;
     static gameSpeed = 2;
     static gravity = 3;
     static innerWidth;
