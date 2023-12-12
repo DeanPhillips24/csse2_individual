@@ -1,31 +1,34 @@
 import Character from './Character.js';
 import GameEnv from './GameEnv.js';
 
-var destroy = 0;
-
-export class Enemy extends Character {
+function destroy() {
+    this.destroyed = true;
+}
+export default class Enemy extends Character {
     // constructors sets up Character object 
-    constructor(canvas, image, speedRatio, enemyData){
+    constructor(canvas, image, speedRatio, enemyData) {
         super(
-            canvas, 
-            new Image(), 
+            canvas,
+            new Image(),
             speedRatio,
-            enemyData.width, 
-            enemyData.height, 
+            enemyData.width,
+            enemyData.height,
         );
 
-        destroy = 0;
         // Player Data is required for Animations
         this.enemyData = enemyData;
 
-        //Initial Position of Goomba
-        this.x = .60 * GameEnv.innerWidth;
+        // Initial Position of Goomba
+        this.x = 0.6 * GameEnv.innerWidth;
+
+        // Variable to track destroy state
+        this.destroyed = false;
     }
 
     draw() {
         // Ensure image is loaded before drawing
-        if (this.image.complete) {
-            this.context.drawImage(this.image, this.x, this.y, this.width, this.height,);
+        if (this.image.complete && !this.destroyed) {
+            this.context.drawImage(this.image, this.x, this.y, this.width, this.height);
         }
     }
 
@@ -36,37 +39,36 @@ export class Enemy extends Character {
             this.speed = -this.speed;
         }
 
-        //Randomly change when the Goomba changes position
+        // Randomly change when the Goomba changes position
         if (Math.random() < 0.006) {
             this.speed = Math.random() < 0.5 ? -this.speed : this.speed;
         }
 
-        //Randomly turn Goomba into God Mode
+        // Randomly turn Goomba into God Mode
         if (Math.random() < 0.01) {
             this.performGoombaSpecial();
         }
 
-        //Initially get the enemy moving
+        // Initially get the enemy moving
         this.x += this.speed;
-        
-        //detect if the goomba is dead
-        if (destroy === 1) {
+
+        // Detect if the goomba is dead
+        if (this.destroyed) {
             this.destroy();
             console.log("destroyed");
-        };
+        }
     };
-    
+
     performGoombaSpecial() {
         if (!this.specialActionActive) {
             // Temporary increase in speed
             const originalSpeed = this.speed;
             this.speed *= 4; // You can adjust the multiplier based on your game's design
 
-            //Change the styling and scale of the enemy
+            // Change the styling and scale of the enemy
             this.canvas.style.transform = 'scaleX(-1)';
             this.canvas.style.filter = 'invert(1)';
             this.canvas.style.transform = 'scale(1.5)';
-
 
             // Set a timeout to revert the speed to the original value after a certain duration
             setTimeout(() => {
@@ -77,11 +79,12 @@ export class Enemy extends Character {
 
                 this.specialActionActive = false; // Reset the flag after the timeout
             }, 3000);
-            
+
             // Set the flag to indicate that the special action is active
             this.specialActionActive = true;
         }
     }
+}
 
 
      /* murder() {
@@ -96,8 +99,5 @@ export class Enemy extends Character {
             }
         }, 50);
     } */
-    
-}
 
 export {destroy}
-export default Enemy

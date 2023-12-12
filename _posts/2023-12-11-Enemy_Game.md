@@ -2,9 +2,9 @@
 toc: false
 comments: false
 layout: post
-title: Enemy Test
-type: tangibles
-courses: { OOP: {week: 0} }
+title: Game with Enemy
+type: ccc
+courses: { csse: {week: 15} }
 ---
 
 <style>
@@ -13,6 +13,10 @@ courses: { OOP: {week: 0} }
         border: 1px solid white;
     }
 </style>
+<div id="controls"> <!-- Controls -->
+        <!-- Background controls -->
+        <button id="toggleCanvasEffect">Invert</button>
+</div>
 <canvas id='canvas'></canvas>
 <script>
     let canvas = document.getElementById('canvas');

@@ -34,7 +34,8 @@ image: /images/mario/hills.png
     import GameEnv from '{{site.baseurl}}/assets/js/GameEnv.js';
     import GameLevel from '{{site.baseurl}}/assets/js/GameLevel.js';
     import GameControl from '{{site.baseurl}}/assets/js/GameControl.js';
-    import Enemy from '{{ site.baseurl }}/assets/js/Enemy.js';
+    import Enemy, { destroy } from '{{ site.baseurl }}/assets/js/Enemy.js';
+    console.log(destroy);
 
     // Define goombaEnemy
     let goombaEnemy;
