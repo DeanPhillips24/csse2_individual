@@ -51,11 +51,14 @@ export class Thing1 extends GameObject {
         this.collisionHeight = scaledHeight;
         this.collisionWidth = scaledWidth;
 
-        this.canvas.style.width = `{scaledHeight}px`;
+        this.canvas.style.width = `${scaledWidth}px`;
+        this.canvas.style.height = `${scaledHeight}px`;
         this.canvas.style.position = 'absolute';
-        this.canvas.style.left = `{thingY}px`;
+        this.canvas.style.left = `${thingX}px`;
+        this.canvas.style.top = `${thingY}px`;
     }
-}
+
+   
+    }
 
 export default Thing1;
-

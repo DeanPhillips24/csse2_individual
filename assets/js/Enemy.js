@@ -6,8 +6,9 @@ var destroy = 0;
 export class Enemy extends Character {
     // constructors sets up Character object 
     constructor(canvas, image, speedRatio, enemyData){
-        super(canvas, 
-            image, 
+        super(
+            canvas, 
+            new Image(), 
             speedRatio,
             enemyData.width, 
             enemyData.height, 
@@ -19,6 +20,13 @@ export class Enemy extends Character {
 
         //Initial Position of Goomba
         this.x = .60 * GameEnv.innerWidth;
+    }
+
+    draw() {
+        // Ensure image is loaded before drawing
+        if (this.image.complete) {
+            this.context.drawImage(this.image, this.x, this.y, this.width, this.height,);
+        }
     }
 
     update() {
@@ -76,7 +84,7 @@ export class Enemy extends Character {
     }
 
 
-    /* murder() {
+     /* murder() {
         let i = 1;
         let intervalId = setInterval(() => {
             if (i >= 0) {

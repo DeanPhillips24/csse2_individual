@@ -34,8 +34,10 @@ image: /images/mario/hills.png
     import GameEnv from '{{site.baseurl}}/assets/js/GameEnv.js';
     import GameLevel from '{{site.baseurl}}/assets/js/GameLevel.js';
     import GameControl from '{{site.baseurl}}/assets/js/GameControl.js';
-    import goomba from '{{ site.baseurl }}/assets/js/Goomba.js';
+    import Enemy from '{{ site.baseurl }}/assets/js/Enemy.js';
 
+    // Define goombaEnemy
+    let goombaEnemy;
 
     /*  ==========================================
      *  ======= Data Definitions =================
@@ -48,7 +50,7 @@ image: /images/mario/hills.png
         goomba: {
           src: "/images/mario/goomba.png",
           width: 448,
-          hegiht: 452,
+          height: 452,
         }
       },
       obstacles: {
@@ -82,7 +84,7 @@ image: /images/mario/hills.png
         }
       },
       things: {
-        coin: {src: "/images/gameimages/Coin.png"},
+        coin: {src: "/images/mario/Coin.png"},
       },
     };
 
@@ -128,8 +130,22 @@ image: /images/mario/hills.png
       // Use waitForRestart to wait for the restart button click
       await waitForButton('startGame');
       id.hidden = true;
+
+      // Check if currentLevel is defined before adding goomba
+      if (GameEnv.currentLevel && GameEnv.currentLevel.enemies) {
+
       
-      return true;
+      // Create instance of Enemy class
+      goombaEnemy = new Enemy(document.createElement('canvas'), assets.enemies.goomba, 1, assets.enemies.goomba);
+
+      // Initial position of Goomba
+      goombaEnemy.x = 100; // Change value for x-coordinate
+
+      // Add Goomba to current game level
+      GameEnv.currentLevel.enemies.push(goombaEnemy);
+      }
+    
+    return true;
     }
 
     // Home screen exits on Game Begin button
@@ -166,10 +182,11 @@ image: /images/mario/hills.png
     new GameLevel( {tag: "start", callback: startGameCallback } );
     new GameLevel( {tag: "home", background: assets.backgrounds.start, callback: homeScreenCallback } );
     // Game screens
-    new GameLevel( {tag: "hills", background: assets.backgrounds.hills, platform: assets.platforms.grass, platformO: assets.platformO.grass, player: assets.players.mario, enemy: assets.enemies.goomba, tube: assets.obstacles.tube, callback: testerCallBack, thing: assets.things.coin, } );
+    new GameLevel( {tag: "hills", background: assets.backgrounds.hills, platform: assets.platforms.grass, platformO: assets.platformO.grass, player: assets.players.mario, tube: assets.obstacles.tube, callback: testerCallBack, thing: assets.things.coin, } );
     new GameLevel( {tag: "alien", background: assets.backgrounds.planet, platform: assets.platforms.alien, player: assets.players.monkey, callback: testerCallBack } );
     // Game Over screen
     new GameLevel( {tag: "end", background: assets.backgrounds.end, callback: gameOverCallBack } );
+
 
     /*  ==========================================
      *  ========== Game Control ==================
@@ -193,7 +210,7 @@ image: /images/mario/hills.png
 
       // Determine the frame based on button state
       let frame;
-      if(buttonssPressed) {
+      if(buttonsPressed) {
         // Logic to determine the frame when button is being pressed
         const currentKey = Object.keys(GameEnv.player.pressedKeys)[0];
 
@@ -206,11 +223,20 @@ image: /images/mario/hills.png
       // Update player frame
       GameEnv.currentLevel.player.currentFrame = frame;
 
+      // Update Goomba
+      if (GameEnv.currentLevel.enemies.length > 0) {
+        for (const enemy of GameEnv.currentLevel.enemies) {
+          enemy.update();
+          enemy.draw(); // Draw goomba
+        }
+      }
+
       // Repeat game loop
       requestAnimationFrame(gameLoop);
       }
 
     // start game
     GameControl.gameLoop();
-
+    
 </script>
+
