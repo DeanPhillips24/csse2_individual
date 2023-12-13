@@ -27,7 +27,7 @@ courses: { csse: {week: 15} }
     class Player {
         constructor() {
             this.position = {
-                x: 100,
+                x: 500,
                 y: 200
             };
             this.velocity = {
@@ -38,7 +38,7 @@ courses: { csse: {week: 15} }
             this.height = 30;
         }
         draw() {
-            c.fillStyle = 'red';
+            c.fillStyle = 'green';
             c.fillRect(this.position.x, this.position.y, this.width, this.height);
         }
         update() {
@@ -99,8 +99,8 @@ courses: { csse: {week: 15} }
     class Goomba {
         constructor(image) {
             this.position = {
-                x: 250,
-                y: 245
+                x: 230,
+                y: 245,
             };
             this.image = image;
             this.width = 55;
@@ -248,14 +248,14 @@ courses: { csse: {week: 15} }
             goomba.position.x <= platform.position.x
         )
         {
-            goomba.velocity.x = 2;
+            goomba.velocity.x = 6;
         }
         if (
             goomba.position.x + goomba.width <= tube.position.x &&
             goomba.position.x + goomba.width + goomba.velocity.x >= tube.position.x
         )
         {
-            goomba.velocity.x = -2;
+            goomba.velocity.x = -6;
         }
     }
     animate();

@@ -76,12 +76,12 @@ image: /images/mario/hills.png
           src: "/images/gameimages/lopezanimation.png",
           width: 46,
           height: 52.5,
-          w: { row: 3, frames: 4 },
-          wa: { idleFrame: {column: 1, frames: 0} }, // no action
-          wd: {}, // no action
+          idle: { row: 6, frames: 1, idleFrame: {column: 1, frames: 0} },
           a: { row: 1, frames: 4, idleFrame: { column: 1, frames: 0 } },
-          s: {  },
-          d: { row: 2, frames: 4, idleFrame: { column: 1, frames: 0 } }
+          d: { row: 2, frames: 4, idleFrame: { column: 1, frames: 0 } },
+          runningLeft: { row: 5, frames: 4, idleFrame: {column: 1, frames: 0} },
+          runningRight: { row: 4, frames: 4, idleFrame: {column: 1, frames: 0} },
+          s: {},
         }
       },
       things: {
@@ -211,30 +211,34 @@ image: /images/mario/hills.png
 
       // Determine the frame based on button state
       let frame;
-      if(buttonsPressed) {
-        // Logic to determine the frame when button is being pressed
-        const currentKey = Object.keys(GameEnv.player.pressedKeys)[0];
+        if (buttonsPressed) {
+          // Logic to determine the frame when a button is being pressed
+          const currentKey = Object.keys(GameEnv.player.pressedKeys)[0];
 
-        // Use animation frame based on key pressed
-        frame = GameEnv.currentLevel.player.playerData[currentKey].idleFrame || GameEnv.currentLevel.player.playerData[currentKey].frames[0];
-      } else {
-        frame = GameEnv.currentLevel.player.wa.idleFrame;
+          // Use animation frame based on the key pressed
+          frame = GameEnv.currentLevel.player.playerData[currentKey].idleFrame || GameEnv.currentLevel.player.playerData[currentKey].frames[0];
+        } else if (!GameEnv.currentLevel.player.isIdle) {
+          // Update frame only if the player is not idle
+          frame = GameEnv.currentLevel.player.wa.idleFrame;
       }
-      
-      // Update player frame
-      GameEnv.currentLevel.player.currentFrame = frame;
 
-      // Update Goomba
-      if (GameEnv.currentLevel.enemies.length > 0) {
-        for (const enemy of GameEnv.currentLevel.enemies) {
-          enemy.update();
-          enemy.draw(); // Draw goomba
+        // Update player frame only if the player is not idle
+        if (!GameEnv.currentLevel.player.isIdle) {
+        GameEnv.currentLevel.player.currentFrame = frame;
+      }
+
+        // Update Goomba
+        if (GameEnv.currentLevel.enemies.length > 0) {
+          for (const enemy of GameEnv.currentLevel.enemies) {
+              enemy.update();
+              enemy.draw(); // Draw goomba
+          }
         }
-      }
 
-      // Repeat game loop
-      requestAnimationFrame(gameLoop);
-      }
+    // Repeat game loop
+    requestAnimationFrame(gameLoop);
+}
+
 
     // start game
     GameControl.gameLoop();

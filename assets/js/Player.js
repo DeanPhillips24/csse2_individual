@@ -36,22 +36,29 @@ export class Player extends Character {
     setAnimation(key) {
         // animation comes from playerData
         var animation = this.playerData[key];
-        // direction setup
-        if (key === "a") {
-            this.stashKey = key;
-            this.playerData.w = this.playerData.wa;
-        } else if (key === "d") {
-            this.stashKey = key;
-            this.playerData.w = this.playerData.wd;
-        }
-        // set frame and idle frame
-        this.setFrameY(animation.row);
-        this.setMaxFrame(animation.frames);
-        if (this.isIdle && animation.idleFrame) {
-            this.setFrameX(animation.idleFrame.column);
-            this.setMinFrame(animation.idleFrame.frames);
+
+        // Check for animation defined by pressed key
+        if (animation) {
+            // direction setup
+            if (key === "a") {
+                this.stashKey = key;
+                this.playerData.w = this.playerData.wa;
+            } else if (key === "d") {
+                this.stashKey = key;
+                this.playerData.w = this.playerData.wd;
+            }
+
+            // set frame and idle frame
+            this.setFrameY(animation.row);
+            this.setMaxFrame(animation.frames);
+
+            if (this.isIdle && animation.idleFrame) {
+                this.setFrameX(animation.idleFrame.column);
+                this.setMinFrame(animation.idleFrame.frames);
+            }
         }
     }
+    
 
     // check for matching animation
     isAnimation(key) {
@@ -64,8 +71,16 @@ export class Player extends Character {
     }
 
     // check for gravity based animation
-    isGravityAnimation(key) {
+    isGravityAnimation() {
+        console.log("isGravityAnimation called");
+        console.log("this.isIdle:", this.isIdle);
+        console.log("this.bottom:", this.bottom);
+        console.log("this.y:", this.y);
+        console.log("this.speed:", this.speed);
+        console.log("this.currentSpeed:", this.currentSpeed);
+
         var result = false;
+        const key = "w"; 
 
         // verify key is in active animations
         if (key in this.pressedKeys) {
@@ -87,10 +102,18 @@ export class Player extends Character {
         }
 
         // make sure jump has some velocity
-        if (result) {
+        if (this.pressedKeys["w"]) {
             // Adjust horizontal position during the jump
             const horizontalJumpFactor = 0.1; // Adjust this factor as needed
-            this.x += this.speed * horizontalJumpFactor;
+            this.x += this.currentSpeed * horizontalJumpFactor;
+
+            // Adjust vertical position
+            if(this.movement.down) {
+                this.y -= this.bottom * 0.33; // jump 33% higher than bottom
+            }
+
+            result = true;
+
         }
 
         // return to directional animation (direction?)
@@ -121,14 +144,34 @@ export class Player extends Character {
         // Update player position based on speed
         this.x += this.currentSpeed;
 
-        // Handle other animations (e.g., jumping)
-        if (this.isGravityAnimation("w")) {
-            if (this.movement.down) this.y -= (this.bottom * 0.33); // jump 33% higher than bottom
-        }
+        // Check for speed threshold to change sprite sheet rows
+        const walkingSpeedThreshold = 1; // Walking speed threshold
+        const runningSpeedThreshold = 5; // Running speed threshold
+
+        if (Math.abs(this.currentSpeed) >= runningSpeedThreshold) {
+            // Change sprite sheet row for running
+            if (this.currentSpeed > 0) {
+            this.setFrameY(this.playerData.runningRight.row);
+            } else {
+                this.setFrameY(this.playerData.runningLeft.row);
+            }
+        } else if (Math.abs(this.currentSpeed) >= walkingSpeedThreshold) {
+            // Change sprite sheet row for walking
+            if (this.currentSpeed > 0) {
+                this.setFrameY(this.playerData.d.row);
+            } else {
+                this.setFrameY(this.playerData.a.row);
+            }
+            } else {
+            // Revert to normal animation if speed is below the walking threshold
+            this.setFrameY(this.playerData.idle.row);
+            }
 
         // Perform super update actions
         super.update();
     }
+
+
 
     // Player action on collisions
     collisionAction() {
@@ -158,6 +201,7 @@ export class Player extends Character {
     handleKeyDown(event) {
         if (this.playerData.hasOwnProperty(event.key)) {
             const key = event.key;
+            console.log('Key down: ${key}');
             if (!(event.key in this.pressedKeys)) {
                 this.pressedKeys[event.key] = this.playerData[key];
                 this.setAnimation(key);
@@ -171,6 +215,7 @@ export class Player extends Character {
     handleKeyUp(event) {
         if (this.playerData.hasOwnProperty(event.key)) {
             const key = event.key;
+            console.log('Key up: ${key}');
             if (event.key in this.pressedKeys) {
                 delete this.pressedKeys[event.key];
             }
