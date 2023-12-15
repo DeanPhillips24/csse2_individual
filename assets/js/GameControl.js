@@ -1,12 +1,5 @@
 import GameEnv from './GameEnv.js';
-
-/* GameControl is an object literal.
- *   Informerly GameControl looks like defining a variable with methods.
- *   By definition GameControl is a singleton object, without a constructor.
- *   This style of definition ensures one instance, an object literal.
- *   
- *   Observe, encapulation of this.inTransition and sharing between methods.
-*/
+import GameLevel from './GameLevel.js';
 
 const GameControl = {
 
@@ -16,6 +9,13 @@ const GameControl = {
 
         // Destroy existing game objects
         GameEnv.destroy();
+
+        // Ensure newLevel is an instance of GameLevel
+        if (!(newLevel instanceof GameLevel)) {
+            console.error('Invalid level object:', newLevel);
+            this.inTransition = false;
+            return;
+        }
 
         // Load GameLevel objects
         await newLevel.load();
@@ -58,9 +58,8 @@ const GameControl = {
         }
 
         // recycle gameLoop, aka recursion
-        requestAnimationFrame(this.gameLoop.bind(this));  
+        setTimeout(requestAnimationFrame(this.gameLoop.bind(this)),1000/GameEnv.frameRate);  
     },
-
 };
 
 export default GameControl;

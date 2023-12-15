@@ -3,16 +3,56 @@ layout: base
 title: Dynamic Game Levels
 description: Early steps in adding levels to an OOP Game.  This includes basic animations left-right-jump, multiple background, and simple callback to terminate each level.
 type: ccc
-courses: { csse: {week: 14} }
+courses: { csse: {week: 14}, csp: {week: 14}, csa: {week: 14} }
 image: /images/mario/hills.png
 ---
 
 <style>
-    #gameBegin, #controls, #gameOver {
-        position: relative;
+    #gameBegin, #controls, #gameOver, #settings {
+      position: relative;
         z-index: 2; /*Ensure the controls are on top*/
     }
+
+    #toggleCanvasEffect, #background, #platform {
+      aimation: fadein 5s;
+    }
+
+    #startGame {
+      animation: flash 1.3s infinite;
+    }
+
+    @keyframes flash {
+      50% {
+        opacity: 0;
+      }
+    }
+
+    @keyframes fadeout {
+      from {opacity: 1}
+      to {opacity: 0}
+    }
+
+    @keyframes fadein {
+      from {opacity: 0}
+      to {opacity: 1}
+    }
+    .sidenav {
+      position: fixed;
+      height: 100%; /* 100% Full-height */
+      width: 0px; /* 0 width - change this with JavaScript */
+      z-index: 3; /* Stay on top */
+      top: 0; /* Stay at the top */
+      left: 0;
+      overflow-x: hidden; /* Disable horizontal scroll */
+      padding-top: 60px; /* Place content 60px from the top */
+      transition: 0.5s; /* 0.5 second transition effect to slide in the sidenav */
+      background-color: black;
+    }
 </style>
+
+<div id="mySidebar" class="sidenav">
+  <a href="javascript:void(0)" id="toggleSettingsBar1" class="closebtn">&times;</a>
+</div>
 
 <!-- Prepare DOM elements -->
 <!-- Wrap both the canvas and controls in a container div -->
@@ -24,21 +64,22 @@ image: /images/mario/hills.png
         <!-- Background controls -->
         <button id="toggleCanvasEffect">Invert</button>
     </div>
+    <div id="settings"> <!-- Controls -->
+        <!-- Background controls -->
+        <button id="toggleSettingsBar">Settings</button>
+    </div>
     <div id="gameOver" hidden>
         <button id="restartGame">Restart</button>
     </div>
 </div>
 
+<!-- regular game -->
 <script type="module">
     // Imports
     import GameEnv from '{{site.baseurl}}/assets/js/GameEnv.js';
     import GameLevel from '{{site.baseurl}}/assets/js/GameLevel.js';
     import GameControl from '{{site.baseurl}}/assets/js/GameControl.js';
-    import Enemy, { destroy } from '{{ site.baseurl }}/assets/js/Enemy.js';
-    console.log(destroy);
 
-    // Define goombaEnemy
-    let goombaEnemy;
 
     /*  ==========================================
      *  ======= Data Definitions =================
@@ -47,6 +88,63 @@ image: /images/mario/hills.png
 
     // Define assets for the game
     var assets = {
+      obstacles: {
+        tube: { src: "/images/mario/tube.png" },
+      },
+      platforms: {
+        grass: { src: "/images/mario/platform.png"},
+        alien: { src: "/images/mario/alien.png" },
+        carpet: { src: "/images/gameimages/carpet.jpeg"}
+      },
+      backgrounds: {
+        start: { src: "/images/gameimages/antoine.jpg" },
+        hills: { src: "/images/mario/hills.png" },
+        mountains: { src:"/images/mario/mountains.jpg"},
+        planet: { src: "/images/gameimages/AvenidaTown_87.png" },
+        castles: { src: "/images/mario/ltg.jpg" },
+        end: { src: "/images/mario/game_over.png" }
+      },
+      players: {
+        mario: {
+          type: 0,
+          src: "/images/gameimages/mario_animation.png",
+          width: 256,
+          height: 256,
+          w: { row: 10, frames: 15 },
+          wa: { row: 11, frames: 15 },
+          wd: { row: 10, frames: 15 },
+          a: { row: 3, frames: 7, idleFrame: { column: 7, frames: 0 } },
+          s: { row: null, frames: null},
+          d: { row: 2, frames: 7, idleFrame: { column: 7, frames: 0 } }
+        },
+        monkey: {
+          type: 0,
+          src: "/images/mario/monkey.png",
+          width: 40,
+          height: 40,
+          w: { row: 9, frames: 15 },
+          wa: { row: 9, frames: 15 },
+          wd: { row: 9, frames: 15 },
+          a: { row: 1, frames: 15, idleFrame: { column: 7, frames: 0 } },
+          s: { row: 12, frames: 15 },
+          d: { row: 0, frames: 15, idleFrame: { column: 7, frames: 0 } }
+        },
+        lopez: {
+          type: 1,
+          src: "/images/gameimages/lopezanimation.png",
+          width: 46,
+          height: 52,
+          idle: { row: 6, frames: 3, idleFrame: {column: 1, frames: 0} },
+          a: { row: 1, frames: 3, idleFrame: { column: 1, frames: 0 } }, // Right Movement
+          d: { row: 2, frames: 3, idleFrame: { column: 1, frames: 0 } }, // Left Movement 
+          w: { row: 3, frames: 3}, // Up
+          wa: { row: 3, frames: 3},
+          wd: { row: 3, frames: 3},
+          runningLeft: { row: 5, frames: 4, idleFrame: {column: 1, frames: 0} },
+          runningRight: { row: 4, frames: 4, idleFrame: {column: 1, frames: 0} },
+          s: {}, // Stop the movement 
+        },
+      },
       enemies: {
         goomba: {
           src: "/images/mario/goomba.png",
@@ -54,38 +152,8 @@ image: /images/mario/hills.png
           height: 452,
         }
       },
-      obstacles: {
-        tube: { src: "/images/mario/tube.png" },
-      },
-      platforms: {
-        grass: { src: "/images/mario/grass.png" },
-        alien: { src: "/images/mario/alien.png" },
-      },
-      platformO: {
-        grass: {src: "/images/mario/brick_wall.png"},
-      },
-      backgrounds: {
-        start: { src: "/images/gameimages/antoine.jpg" },
-        hills: { src: "/images/mario/hills.png" },
-        planet: { src: "/images/gameimages/AvenidaTown_87.png" },
-        castles: { src: "/images/mario/castles.png" },
-        end: { src: "/images/mario/game_over.png" }
-      },
-      players: {
-        mario: {
-          src: "/images/gameimages/lopezanimation.png",
-          width: 46,
-          height: 52.5,
-          idle: { row: 6, frames: 1, idleFrame: {column: 1, frames: 0} },
-          a: { row: 1, frames: 4, idleFrame: { column: 1, frames: 0 } },
-          d: { row: 2, frames: 4, idleFrame: { column: 1, frames: 0 } },
-          runningLeft: { row: 5, frames: 4, idleFrame: {column: 1, frames: 0} },
-          runningRight: { row: 4, frames: 4, idleFrame: {column: 1, frames: 0} },
-          s: {},
-        }
-      },
-      things: {
-        coin: {src: "/images/mario/Coin.png"},
+      scaffolds: {
+          brick: { src: "/images/mario/brick_wall.png" }, 
       },
     };
 
@@ -131,22 +199,8 @@ image: /images/mario/hills.png
       // Use waitForRestart to wait for the restart button click
       await waitForButton('startGame');
       id.hidden = true;
-
-      // Check if currentLevel is defined before adding goomba
-      if (GameEnv.currentLevel && GameEnv.currentLevel.enemies) {
-
       
-      // Create instance of Enemy class
-      goombaEnemy = new Enemy(document.createElement('canvas'), assets.enemies.goomba, 1, assets.enemies.goomba);
-
-      // Initial position of Goomba
-      goombaEnemy.x = 100; // Change value for x-coordinate
-
-      // Add Goomba to current game level
-      GameEnv.currentLevel.enemies.push(goombaEnemy);
-      }
-    
-    return true;
+      return true;
     }
 
     // Home screen exits on Game Begin button
@@ -183,11 +237,11 @@ image: /images/mario/hills.png
     new GameLevel( {tag: "start", callback: startGameCallback } );
     new GameLevel( {tag: "home", background: assets.backgrounds.start, callback: homeScreenCallback } );
     // Game screens
-    new GameLevel( {tag: "hills", background: assets.backgrounds.hills, platform: assets.platforms.grass, platformO: assets.platformO.grass, player: assets.players.mario, tube: assets.obstacles.tube, callback: testerCallBack, thing: assets.things.coin, } );
-    new GameLevel( {tag: "alien", background: assets.backgrounds.planet, platform: assets.platforms.alien, player: assets.players.monkey, callback: testerCallBack } );
+    new GameLevel( {tag: "hills", background: assets.backgrounds.hills, background2: assets.backgrounds.mountains, platform: assets.platforms.grass, player: assets.players.mario, tube: assets.obstacles.tube, scaffold: assets.scaffolds.brick, callback: testerCallBack } );
+    new GameLevel( {tag: "alien", background: assets.backgrounds.planet, platform: assets.platforms.alien, player: assets.players.monkey, enemy: assets.enemies.goomba, callback: testerCallBack } );
+    new GameLevel( {tag: "lopez", background: assets.backgrounds.planet, platform: assets.platforms.alien, scaffold: assets.scaffolds.brick, player: assets.players.lopez, enemy: assets.enemies.goomba, callback: testerCallBack } );
     // Game Over screen
     new GameLevel( {tag: "end", background: assets.backgrounds.end, callback: gameOverCallBack } );
-
 
     /*  ==========================================
      *  ========== Game Control ==================
@@ -198,50 +252,28 @@ image: /images/mario/hills.png
     toggleCanvasEffect.addEventListener('click', GameEnv.toggleInvert);
     window.addEventListener('resize', GameEnv.resize);
 
-    // Check if buttons are pressed
-    function checkButtonsPressed() {
-      const keysPressed = Object.keys(GameEnv.player.pressedKeys);
-      return keysPressed.length > 0;
-    }
-
-    // Modification to game loop
-    function gameLoop() {
-      // Check if any buttons are pressed
-      const buttonsPressed = checkButtonsPressed();
-
-      // Determine the frame based on button state
-      let frame;
-        if (buttonsPressed) {
-          // Logic to determine the frame when a button is being pressed
-          const currentKey = Object.keys(GameEnv.player.pressedKeys)[0];
-
-          // Use animation frame based on the key pressed
-          frame = GameEnv.currentLevel.player.playerData[currentKey].idleFrame || GameEnv.currentLevel.player.playerData[currentKey].frames[0];
-        } else if (!GameEnv.currentLevel.player.isIdle) {
-          // Update frame only if the player is not idle
-          frame = GameEnv.currentLevel.player.wa.idleFrame;
-      }
-
-        // Update player frame only if the player is not idle
-        if (!GameEnv.currentLevel.player.isIdle) {
-        GameEnv.currentLevel.player.currentFrame = frame;
-      }
-
-        // Update Goomba
-        if (GameEnv.currentLevel.enemies.length > 0) {
-          for (const enemy of GameEnv.currentLevel.enemies) {
-              enemy.update();
-              enemy.draw(); // Draw goomba
-          }
-        }
-
-    // Repeat game loop
-    requestAnimationFrame(gameLoop);
-}
-
-
     // start game
     GameControl.gameLoop();
-    
+
 </script>
 
+<!-- navigation -->
+<script type="module">
+  //sidebar
+  var toggle = false;
+  function toggleWidth(){
+    toggle = !toggle;
+    document.getElementById("mySidebar").style.width = toggle?"250px":"0px";
+  }
+  document.getElementById("toggleSettingsBar").addEventListener("click",toggleWidth);
+  document.getElementById("toggleSettingsBar1").addEventListener("click",toggleWidth);
+
+  // Generate table
+  import Controller from '{{site.baseurl}}/assets/js/Controller.js';
+  
+  var myController = new Controller();
+  myController.initialize();
+
+  var table = myController.levelTable;
+  document.getElementById("mySidebar").append(table);
+</script>

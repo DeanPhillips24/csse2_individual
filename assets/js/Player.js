@@ -1,17 +1,22 @@
 import GameEnv from './GameEnv.js';
 import Character from './Character.js';
+import GameControl from './GameControl.js'
 
-export class Player extends Character {
+export class Player extends Character{
     // constructors sets up Character object 
-    constructor(canvas, image, speedRatio, playerData, speedLimit) {
-        super(canvas, image, speedRatio, playerData.width, playerData.height);
-
+    constructor(canvas, image, speedRatio, playerData){
+        super(canvas, 
+            image, 
+            speedRatio,
+            playerData.width, 
+            playerData.height, 
+        );
         // Player Data is required for Animations
         this.playerData = playerData;
 
         // Player control data
         this.pressedKeys = {};
-        this.movement = { left: true, right: true, down: true };
+        this.movement = {left: true, right: true, down: true};
         this.isIdle = true;
         this.stashKey = "d"; // initial key
 
@@ -23,68 +28,46 @@ export class Player extends Character {
         document.addEventListener('keydown', this.keydownListener);
         document.addEventListener('keyup', this.keyupListener);
 
-        // Additional Property for Speed Limit
-        this.speedLimit = speedLimit;
-        this.currentSpeed = 0;
-        this.acceleration = 0.11;
-        this.deceleration = 0.1;
-
-        
         GameEnv.player = this;
     }
 
     setAnimation(key) {
         // animation comes from playerData
-        var animation = this.playerData[key];
-
-        // Check for animation defined by pressed key
-        if (animation) {
-            // direction setup
-            if (key === "a") {
-                this.stashKey = key;
-                this.playerData.w = this.playerData.wa;
-            } else if (key === "d") {
-                this.stashKey = key;
-                this.playerData.w = this.playerData.wd;
-            }
-
-            // set frame and idle frame
-            this.setFrameY(animation.row);
-            this.setMaxFrame(animation.frames);
-
-            if (this.isIdle && animation.idleFrame) {
-                this.setFrameX(animation.idleFrame.column);
-                this.setMinFrame(animation.idleFrame.frames);
-            }
+        var animation = this.playerData[key]
+        // direction setup
+        if (key === "a") {
+            this.stashKey = key;
+            this.playerData.w = this.playerData.wa;
+        } else if (key === "d") {
+            this.stashKey = key;
+            this.playerData.w = this.playerData.wd;
         }
-    }
+        // set frame and idle frame
+        this.setFrameY(animation.row);
+        this.setMaxFrame(animation.frames);
+        if (this.isIdle && animation.idleFrame) {
+            this.setFrameX(animation.idleFrame.column)
+            this.setMinFrame(animation.idleFrame.frames);
+        }
+    }i
     
-
     // check for matching animation
     isAnimation(key) {
         var result = false;
         if (key in this.pressedKeys) {
             result = !this.isIdle;
         }
-
+        
         return result;
     }
 
     // check for gravity based animation
-    isGravityAnimation() {
-        console.log("isGravityAnimation called");
-        console.log("this.isIdle:", this.isIdle);
-        console.log("this.bottom:", this.bottom);
-        console.log("this.y:", this.y);
-        console.log("this.speed:", this.speed);
-        console.log("this.currentSpeed:", this.currentSpeed);
-
+    isGravityAnimation(key) {
         var result = false;
-        const key = "w"; 
-
+    
         // verify key is in active animations
-        if (key in this.pressedKeys) {
-            result = (!this.isIdle && this.bottom <= this.y);
+        if (key in this.pressedKeys ) {
+            result = (!this.isIdle && this.bottom <= this.y)||!this.gravityEnabled;
         }
 
         // scene for on top of tube animation
@@ -100,22 +83,14 @@ export class Player extends Character {
                 }, 1000);
             }, 2000);
         }
-
-        // make sure jump has some velocity
-        if (this.pressedKeys["w"]) {
+    
+        // make sure jump has ssome velocity
+        if (result) {
             // Adjust horizontal position during the jump
             const horizontalJumpFactor = 0.1; // Adjust this factor as needed
-            this.x += this.currentSpeed * horizontalJumpFactor;
-
-            // Adjust vertical position
-            if(this.movement.down) {
-                this.y -= this.bottom * 0.33; // jump 33% higher than bottom
-            }
-
-            result = true;
-
+            this.x += this.speed * horizontalJumpFactor;  
         }
-
+    
         // return to directional animation (direction?)
         if (this.bottom <= this.y) {
             this.setAnimation(this.stashKey);
@@ -123,55 +98,23 @@ export class Player extends Character {
 
         return result;
     }
+    
 
     // Player updates
     update() {
-        // Adjust speed based on pressed keys
-        if (this.pressedKeys['a'] && this.movement.left) {
-            this.currentSpeed -= this.acceleration;
-        } else if (this.pressedKeys['d'] && this.movement.right) {
-            this.currentSpeed += this.acceleration;
-        } else {
-            // Decelerate when no movement keys are pressed
-            this.currentSpeed *= (1 - this.deceleration);
+        if (this.isAnimation("a")) {
+            if (this.movement.left) this.x -= this.speed;  // Move to left
         }
-
-        // Apply speed limit
-        if (Math.abs(this.currentSpeed) > this.speedLimit) {
-            this.currentSpeed = this.currentSpeed > 0 ? this.speedLimit : -this.speedLimit;
+        if (this.isAnimation("d")) {
+            if (this.movement.right) this.x += this.speed;  // Move to right
         }
-
-        // Update player position based on speed
-        this.x += this.currentSpeed;
-
-        // Check for speed threshold to change sprite sheet rows
-        const walkingSpeedThreshold = 1; // Walking speed threshold
-        const runningSpeedThreshold = 5; // Running speed threshold
-
-        if (Math.abs(this.currentSpeed) >= runningSpeedThreshold) {
-            // Change sprite sheet row for running
-            if (this.currentSpeed > 0) {
-            this.setFrameY(this.playerData.runningRight.row);
-            } else {
-                this.setFrameY(this.playerData.runningLeft.row);
-            }
-        } else if (Math.abs(this.currentSpeed) >= walkingSpeedThreshold) {
-            // Change sprite sheet row for walking
-            if (this.currentSpeed > 0) {
-                this.setFrameY(this.playerData.d.row);
-            } else {
-                this.setFrameY(this.playerData.a.row);
-            }
-            } else {
-            // Revert to normal animation if speed is below the walking threshold
-            this.setFrameY(this.playerData.idle.row);
-            }
+        if (this.isGravityAnimation("w")) {
+            if (this.movement.down) this.y -= (this.bottom * .4);  // jump 11% higher than bottom
+        } 
 
         // Perform super update actions
         super.update();
     }
-
-
 
     // Player action on collisions
     collisionAction() {
@@ -195,18 +138,73 @@ export class Player extends Character {
             this.movement.right = true;
             this.movement.down = true;
         }
-    }
+        if (this.collisionData.touchPoints.other.id === "scaffold") {
+            // Collision with the left side of the Platform
+            if (this.collisionData.touchPoints.other.left && (this.topOfPlatform === true)) {
+                this.movement.right = false;
+            }
+            // Collision with the right side of the platform
+            if (this.collisionData.touchPoints.other.right && (this.topOfPlatform === true)) {
+                this.movement.left = false;
+            }
+            // Collision with the top of the player
+            if (this.collisionData.touchPoints.this.ontop) {
+                this.gravityEnabled = false;
+                this.topOfPlatform = true; 
+            }
+            if (this.collisionData.touchPoints.this.top) {
+                this.gravityEnabled = false;
+            }
+            //if (this.collisionData.touchPoints.this.top) {
+            //    this.gravityEnabled = false;
+            //    
+            //    console.log(this.topOfPlatform + "top")
+            //    console.log(this.gravityEnabled + "grav")
+            //    //console.log("e");
+            //}
+        }else{
+            this.topOfPlatform = false;
+            this.movement.left = true;
+            this.movement.right = true;
+            this.movement.down = true;
+            this.gravityEnabled = true;
+            
+        }
 
+        if (this.collisionData.touchPoints.other.id === "enemy") {
+            if (this.y >= this.bottom){ //you died
+                //reload current level (death)
+                GameControl.transitionToLevel(GameEnv.levels[GameEnv.levels.indexOf(GameEnv.currentLevel)]);
+            }
+            else{//you kill goomba
+                this.y -= this.bottom*.2;//bounce
+                for(let i = 0; i<GameEnv.gameObjects.length;i++){//loop through current gameObjects
+                    if(GameEnv.gameObjects[i].isGoomba){ //look for object with (isGoomba==true) tag
+                        GameEnv.gameObjects[i].canvas.remove(); //remove goomba sprite from current level
+                        GameEnv.gameObjects.splice(i,1); //remove goomba object from current level
+                    }
+                }
+            }
+        }
+    }
+    
     // Event listener key down
     handleKeyDown(event) {
         if (this.playerData.hasOwnProperty(event.key)) {
             const key = event.key;
-            console.log('Key down: ${key}');
             if (!(event.key in this.pressedKeys)) {
                 this.pressedKeys[event.key] = this.playerData[key];
                 this.setAnimation(key);
                 // player active
                 this.isIdle = false;
+            }
+            if (key === "a") {
+                GameEnv.backgroundSpeed2 = -0.1;
+                GameEnv.backgroundSpeed = -0.4;
+            }
+            if (key ==="d") {
+                GameEnv.backgroundSpeed2 = 0.1;
+                GameEnv.backgroundSpeed = 0.4;
             }
         }
     }
@@ -215,13 +213,20 @@ export class Player extends Character {
     handleKeyUp(event) {
         if (this.playerData.hasOwnProperty(event.key)) {
             const key = event.key;
-            console.log('Key up: ${key}');
             if (event.key in this.pressedKeys) {
                 delete this.pressedKeys[event.key];
             }
-            this.setAnimation(key);
-            // player idle
-            this.isIdle = true;
+            if (key ==="a") {
+                GameEnv.backgroundSpeed2 = 0;
+                GameEnv.backgroundSpeed = 0;
+            }
+            if (key ==="d") {
+                GameEnv.backgroundSpeed2 = 0;
+                GameEnv.backgroundSpeed = 0;
+            }
+            this.setAnimation(key);  
+            
+            this.isIdle = true;     
         }
     }
 
@@ -235,5 +240,6 @@ export class Player extends Character {
         super.destroy();
     }
 }
+
 
 export default Player;
