@@ -100,8 +100,9 @@ image: /images/mario/hills.png
         start: { src: "/images/gameimages/antoine.jpg" },
         hills: { src: "/images/mario/hills.png" },
         mountains: { src:"/images/mario/mountains.jpg"},
-        planet: { src: "/images/gameimages/AvenidaTown_87.png" },
-        castles: { src: "/images/mario/ltg.jpg" },
+        planet: { src: "/images/mario/planet.jpg" },
+        avenida: { src: "/images/gameimages/AvenidaTown_87.png" },
+        lab: { src: "/images/gameimages/mortensenlabbackground.jpg" },
         end: { src: "/images/mario/game_over.png" }
       },
       players: {
@@ -143,6 +144,16 @@ image: /images/mario/hills.png
           runningLeft: { row: 5, frames: 4, idleFrame: {column: 1, frames: 0} },
           runningRight: { row: 4, frames: 4, idleFrame: {column: 1, frames: 0} },
           s: {}, // Stop the movement 
+        },
+        mortensen: {
+          type: 1,
+          src: "/images/gameimages/mortspritesheet2.png",
+          width: 19,
+          height: 27, 
+          w: { row: 3, frames: 4, idleFrame: { column: 1, frames: 0} },
+          a: { row: 2, frames: 4, idleFrame: { column: 1, frames: 0 } },
+          s: { row: 0, frames: 4, idleFrame: { coluumn: 1, frames: 0} },
+          d: { row: 1, frames: 4, idleFrame: { column: 1, frames: 0 } }
         },
       },
       enemies: {
@@ -239,7 +250,8 @@ image: /images/mario/hills.png
     // Game screens
     new GameLevel( {tag: "hills", background: assets.backgrounds.hills, background2: assets.backgrounds.mountains, platform: assets.platforms.grass, player: assets.players.mario, tube: assets.obstacles.tube, scaffold: assets.scaffolds.brick, callback: testerCallBack } );
     new GameLevel( {tag: "alien", background: assets.backgrounds.planet, platform: assets.platforms.alien, player: assets.players.monkey, enemy: assets.enemies.goomba, callback: testerCallBack } );
-    new GameLevel( {tag: "lopez", background: assets.backgrounds.planet, platform: assets.platforms.alien, scaffold: assets.scaffolds.brick, player: assets.players.lopez, enemy: assets.enemies.goomba, callback: testerCallBack } );
+    new GameLevel( {tag: "lopez", background: assets.backgrounds.avenida, platform: assets.platforms.grass, scaffold: assets.scaffolds.brick, player: assets.players.lopez, enemy: assets.enemies.goomba, callback: testerCallBack } );
+    new GameLevel( {tag: "mortensen", background: assets.backgrounds.lab, platform: assets.platforms.grass, scaffold: assets.scaffolds.brick, player: assets.players.mortensen, enemy: assets.enemies.goomba, callback: testerCallBack } );
     // Game Over screen
     new GameLevel( {tag: "end", background: assets.backgrounds.end, callback: gameOverCallBack } );
 
