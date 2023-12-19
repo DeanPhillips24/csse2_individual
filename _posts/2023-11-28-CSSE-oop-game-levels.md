@@ -288,4 +288,8 @@ image: /images/mario/hills.png
 
   var table = myController.levelTable;
   document.getElementById("mySidebar").append(table);
+
+  var div = myController.speedDiv;
+  document.getElementById("mySidebar").append(div);
+
 </script>
