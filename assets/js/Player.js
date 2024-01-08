@@ -1,6 +1,6 @@
 import GameEnv from './GameEnv.js';
 import Character from './Character.js';
-import GameControl from './GameControl.js'
+import deathController from './Death.js';
 
 export class Player extends Character{
     // constructors sets up Character object 
@@ -49,7 +49,7 @@ export class Player extends Character{
             this.setFrameX(animation.idleFrame.column)
             this.setMinFrame(animation.idleFrame.frames);
         }
-    }i
+    };
     
     // check for matching animation
     isAnimation(key) {
@@ -66,8 +66,8 @@ export class Player extends Character{
         var result = false;
     
         // verify key is in active animations
-        if (key in this.pressedKeys ) {
-            result = (!this.isIdle && this.bottom <= this.y)||!this.gravityEnabled;
+        if (key in this.pressedKeys) {
+            result = (!this.isIdle && (this.topOfPlatform || this.bottom <= this.y));
         }
 
         // scene for on top of tube animation
@@ -95,7 +95,7 @@ export class Player extends Character{
         if (this.bottom <= this.y) {
             this.setAnimation(this.stashKey);
         }
-
+    
         return result;
     }
     
@@ -109,7 +109,7 @@ export class Player extends Character{
             if (this.movement.right) this.x += this.speed;  // Move to right
         }
         if (this.isGravityAnimation("w")) {
-            if (this.movement.down) this.y -= (this.bottom * .4);  // jump 11% higher than bottom
+            if (this.movement.down) this.y -= (this.bottom * .44);  // jump 33% higher than bottom
         } 
 
         // Perform super update actions
@@ -118,74 +118,95 @@ export class Player extends Character{
 
     // Player action on collisions
     collisionAction() {
+        // tube
         if (this.collisionData.touchPoints.other.id === "tube") {
             // Collision with the left side of the Tube
             if (this.collisionData.touchPoints.other.left) {
                 this.movement.right = false;
+                console.log("tube touch left");
             }
             // Collision with the right side of the Tube
             if (this.collisionData.touchPoints.other.right) {
                 this.movement.left = false;
+                console.log("tube touch right");
             }
             // Collision with the top of the player
             if (this.collisionData.touchPoints.other.ontop) {
                 this.movement.down = false;
                 this.x = this.collisionData.touchPoints.other.x;
+                console.log("tube touch top");
             }
         } else {
             // Reset movement flags if not colliding with a tube
             this.movement.left = true;
             this.movement.right = true;
             this.movement.down = true;
-        }
-        if (this.collisionData.touchPoints.other.id === "scaffold") {
+        };
+        // *******************************
+        // Platform collision
+        if (this.collisionData.touchPoints.other.id === "jumpPlatform") {
             // Collision with the left side of the Platform
+            console.log("id")
             if (this.collisionData.touchPoints.other.left && (this.topOfPlatform === true)) {
                 this.movement.right = false;
+                console.log("platform left")
             }
             // Collision with the right side of the platform
             if (this.collisionData.touchPoints.other.right && (this.topOfPlatform === true)) {
                 this.movement.left = false;
+                console.log("platform right")
             }
             // Collision with the top of the player
             if (this.collisionData.touchPoints.this.ontop) {
                 this.gravityEnabled = false;
-                this.topOfPlatform = true; 
+                console.log("c")
+            }
+            if (this.collisionData.touchPoints.this.bottom) {
+                this.gravityEnabled = false;
+                console.log("d")
             }
             if (this.collisionData.touchPoints.this.top) {
                 this.gravityEnabled = false;
+                this.topOfPlatform = true;
+                console.log(this.topOfPlatform + "top")
+                console.log(this.gravityEnabled + "grav")
+                //console.log("e");
             }
-            //if (this.collisionData.touchPoints.this.top) {
-            //    this.gravityEnabled = false;
-            //    
-            //    console.log(this.topOfPlatform + "top")
-            //    console.log(this.gravityEnabled + "grav")
-            //    //console.log("e");
-            //}
-        }else{
+        } else {
             this.topOfPlatform = false;
-            this.movement.left = true;
-            this.movement.right = true;
-            this.movement.down = true;
             this.gravityEnabled = true;
-            
-        }
-
+            /* this.movement.left = true;
+            this.movement.right = true;
+            this.movement.down = true; */
+        };
+        // The else statement above may be causing issues
+        // *******************************
+        // Enemy collision
         if (this.collisionData.touchPoints.other.id === "enemy") {
-            if (this.y >= this.bottom){ //you died
-                //reload current level (death)
-                GameControl.transitionToLevel(GameEnv.levels[GameEnv.levels.indexOf(GameEnv.currentLevel)]);
+            // Collision with the left side of the Enemy
+            if (this.collisionData.touchPoints.other.left) {
+                deathController.setDeath(1);
             }
-            else{//you kill goomba
-                this.y -= this.bottom*.2;//bounce
-                for(let i = 0; i<GameEnv.gameObjects.length;i++){//loop through current gameObjects
-                    if(GameEnv.gameObjects[i].isGoomba){ //look for object with (isGoomba==true) tag
-                        GameEnv.gameObjects[i].canvas.remove(); //remove goomba sprite from current level
-                        GameEnv.gameObjects.splice(i,1); //remove goomba object from current level
-                    }
-                }
+            // Collision with the right side of the Enemy
+            if (this.collisionData.touchPoints.other.right) {
+                deathController.setDeath(1);
             }
-        }
+            // Collision with the top of the Enemy
+            if (this.collisionData.touchPoints.other.ontop) {
+                console.log("Bye Goomba");
+                this.y -= (this.bottom * .33);
+                this.collisionData.touchPoints.other.destroy();
+            }
+        };
+
+        //if (this.collisionData.touchPoints.other.id === "thing1") {
+        //    if (this.collisionData.touchPoints.coin.left) {
+        //        GameEnv.touchingCoin = true;
+        //    }
+        //    if (this.collisionData.touchPoints.coin.right) {
+        //        GameEnv.touchingCoin = true;
+        //    }
+        //}
     }
     
     // Event listener key down
@@ -202,7 +223,7 @@ export class Player extends Character{
                 GameEnv.backgroundSpeed2 = -0.1;
                 GameEnv.backgroundSpeed = -0.4;
             }
-            if (key ==="d") {
+            if (key === "d") {
                 GameEnv.backgroundSpeed2 = 0.1;
                 GameEnv.backgroundSpeed = 0.4;
             }
@@ -216,16 +237,16 @@ export class Player extends Character{
             if (event.key in this.pressedKeys) {
                 delete this.pressedKeys[event.key];
             }
-            if (key ==="a") {
-                GameEnv.backgroundSpeed2 = 0;
+            if (key === "a") {
                 GameEnv.backgroundSpeed = 0;
+                GameEnv.backgroundSpeed2 = 0;
             }
-            if (key ==="d") {
-                GameEnv.backgroundSpeed2 = 0;
+            if (key === "d") {
                 GameEnv.backgroundSpeed = 0;
+                GameEnv.backgroundSpeed2 = 0;
             }
             this.setAnimation(key);  
-            
+            // player idle
             this.isIdle = true;     
         }
     }
@@ -240,6 +261,5 @@ export class Player extends Character{
         super.destroy();
     }
 }
-
 
 export default Player;
