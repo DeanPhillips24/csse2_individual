@@ -1,6 +1,7 @@
 import GameEnv from './GameEnv.js';
 import Character from './Character.js';
 import deathController from './Death.js';
+import Enemy from './Enemy.js';
 
 export class Player extends Character{
     // constructors sets up Character object 
@@ -49,7 +50,7 @@ export class Player extends Character{
             this.setFrameX(animation.idleFrame.column)
             this.setMinFrame(animation.idleFrame.frames);
         }
-    };
+    }i
     
     // check for matching animation
     isAnimation(key) {
@@ -104,13 +105,24 @@ export class Player extends Character{
     update() {
         if (this.isAnimation("a")) {
             if (this.movement.left) this.x -= this.speed;  // Move to left
+            this.facingLeft = true;
         }
         if (this.isAnimation("d")) {
             if (this.movement.right) this.x += this.speed;  // Move to right
+            this.facingLeft = false;
         }
         if (this.isGravityAnimation("w")) {
-            if (this.movement.down) this.y -= (this.bottom * .44);  // jump 33% higher than bottom
+            if (this.movement.down) this.y -= (this.bottom * .33);  // jump 33% higher than bottom
         } 
+        if (this.isAnimation("s")) {
+            //this.dashFunction();
+            if (this.movement) {  // Check if movement is allowed
+                if(this.dashTimer){
+                    const moveSpeed = this.speed * 2;
+                    this.x += this.facingLeft ? -moveSpeed : moveSpeed;
+                }
+            }
+        }
 
         // Perform super update actions
         super.update();
@@ -118,69 +130,26 @@ export class Player extends Character{
 
     // Player action on collisions
     collisionAction() {
-        // tube
         if (this.collisionData.touchPoints.other.id === "tube") {
             // Collision with the left side of the Tube
             if (this.collisionData.touchPoints.other.left) {
                 this.movement.right = false;
-                console.log("tube touch left");
             }
             // Collision with the right side of the Tube
             if (this.collisionData.touchPoints.other.right) {
                 this.movement.left = false;
-                console.log("tube touch right");
             }
             // Collision with the top of the player
             if (this.collisionData.touchPoints.other.ontop) {
                 this.movement.down = false;
                 this.x = this.collisionData.touchPoints.other.x;
-                console.log("tube touch top");
             }
         } else {
             // Reset movement flags if not colliding with a tube
             this.movement.left = true;
             this.movement.right = true;
             this.movement.down = true;
-        };
-        // *******************************
-        // Platform collision
-        if (this.collisionData.touchPoints.other.id === "jumpPlatform") {
-            // Collision with the left side of the Platform
-            console.log("id")
-            if (this.collisionData.touchPoints.other.left && (this.topOfPlatform === true)) {
-                this.movement.right = false;
-                console.log("platform left")
-            }
-            // Collision with the right side of the platform
-            if (this.collisionData.touchPoints.other.right && (this.topOfPlatform === true)) {
-                this.movement.left = false;
-                console.log("platform right")
-            }
-            // Collision with the top of the player
-            if (this.collisionData.touchPoints.this.ontop) {
-                this.gravityEnabled = false;
-                console.log("c")
-            }
-            if (this.collisionData.touchPoints.this.bottom) {
-                this.gravityEnabled = false;
-                console.log("d")
-            }
-            if (this.collisionData.touchPoints.this.top) {
-                this.gravityEnabled = false;
-                this.topOfPlatform = true;
-                console.log(this.topOfPlatform + "top")
-                console.log(this.gravityEnabled + "grav")
-                //console.log("e");
-            }
-        } else {
-            this.topOfPlatform = false;
-            this.gravityEnabled = true;
-            /* this.movement.left = true;
-            this.movement.right = true;
-            this.movement.down = true; */
-        };
-        // The else statement above may be causing issues
-        // *******************************
+        }
         // Enemy collision
         if (this.collisionData.touchPoints.other.id === "enemy") {
             // Collision with the left side of the Enemy
@@ -194,19 +163,71 @@ export class Player extends Character{
             // Collision with the top of the Enemy
             if (this.collisionData.touchPoints.other.ontop) {
                 console.log("Bye Goomba");
-                this.y -= (this.bottom * .33);
-                this.collisionData.touchPoints.other.destroy();
+                deathController.setDeath(1);
+                //destroy(this.collisionData.toxuchPoints.other.ontop)
+                //this.y -= (this.bottom * .33);
+                //this.y -=10000;
+                //this.collisionData.touchPoints.other -= 10000;
+                //this.collisionData.touchPoints.other.destroy(gameObject);
+                //this.enemy.destroy();
+                //destroy(this.collisionData.touchPoints.other);
             }
-        };
-
-        //if (this.collisionData.touchPoints.other.id === "thing1") {
-        //    if (this.collisionData.touchPoints.coin.left) {
-        //        GameEnv.touchingCoin = true;
-        //    }
-        //    if (this.collisionData.touchPoints.coin.right) {
-        //        GameEnv.touchingCoin = true;
-        //    }
-        //}
+        }
+        if (this.collisionData.touchPoints.other.id === "jumpPlatform") {
+            // Collision with the left side of the Tub
+            console.log("id")
+            if (this.collisionData.touchPoints.other.left && (this.topOfPlatform === true)) {
+                this.movement.right = false;
+                console.log("a")
+            }
+            // Collision with the right side of the Tube
+            if (this.collisionData.touchPoints.other.right && (this.topOfPlatform === true)) {
+                this.movement.left = false;
+                console.log("b")
+            }
+            // Collision with the top of the player
+            if (this.collisionData.touchPoints.this.ontop) {
+                this.gravityEnabled = false;
+                console.log("c")
+            }
+            if (this.collisionData.touchPoints.this.bottom) {
+                this.gravityEnabled = false;
+                console.log("d")
+            }
+            if (this.collisionData.touchPoints.this.top) {
+                this.gravityEnabled = false;
+                this.topOfPlatform = true; 
+                console.log(this.topOfPlatform + "top")
+                console.log(this.gravityEnabled + "grav")
+                //console.log("e");
+            }
+        }
+        else {
+            if (this.collisionData.touchPoints.other.id === "thing2") {
+                // Collision with the left side of the Tub
+                if (this.collisionData.touchPoints.other.left) {
+                    this.touchCoin = true;
+                    console.log("coin left")
+                    //window.location.reload();
+                }
+                // Collision with the right side of the Tube
+                if (this.collisionData.touchPoints.other.right) {
+                    console.log("coin right")
+                    this.touchCoin = true;
+                    //window.location.reload();
+                }
+            }    
+            
+            // Reset movement flags if not colliding with a tube
+            this.topOfPlatform = false;
+            /*
+            this.movement.left = true;
+            this.movement.right = true;
+            this.movement.down = true;
+            */
+            this.gravityEnabled = true;
+        }
+        
     }
     
     // Event listener key down
@@ -223,10 +244,33 @@ export class Player extends Character{
                 GameEnv.backgroundSpeed2 = -0.1;
                 GameEnv.backgroundSpeed = -0.4;
             }
+            if (key === "s" && this.facingLeft) {
+                GameEnv.backgroundSpeed2 = -0.1;
+                GameEnv.backgroundSpeed = -0.4;
+            }
             if (key === "d") {
                 GameEnv.backgroundSpeed2 = 0.1;
                 GameEnv.backgroundSpeed = 0.4;
             }
+            if (key === "s" && !this.facingLeft) {
+                GameEnv.backgroundSpeed2 = 0.1;
+                GameEnv.backgroundSpeed = 0.4;
+            }
+        }
+        //dash events
+        if (event.key === "s"){
+            this.canvas.style.filter = 'invert(1)'; //invert mario
+            this.dashTimer = setTimeout(() => {
+                // Stop the player's running functions
+                clearTimeout(this.dashTimer);
+                this.dashTimer = null;
+
+                // Start cooldown timer
+                this.cooldownTimer = setTimeout(() => {
+                    clearTimeout(this.cooldownTimer);
+                    this.cooldownTimer = null;
+                }, 4000);
+            }, 1000);
         }
     }
 
@@ -237,6 +281,9 @@ export class Player extends Character{
             if (event.key in this.pressedKeys) {
                 delete this.pressedKeys[event.key];
             }
+            this.setAnimation(key);  
+            // player idle
+            this.isIdle = true;   
             if (key === "a") {
                 GameEnv.backgroundSpeed = 0;
                 GameEnv.backgroundSpeed2 = 0;
@@ -245,9 +292,18 @@ export class Player extends Character{
                 GameEnv.backgroundSpeed = 0;
                 GameEnv.backgroundSpeed2 = 0;
             }
-            this.setAnimation(key);  
-            // player idle
-            this.isIdle = true;     
+            if (key === "s") {
+                GameEnv.backgroundSpeed = 0;
+                GameEnv.backgroundSpeed2 = 0;
+            }
+        }
+        if (event.key === "s"){
+            this.canvas.style.filter = 'invert(0)'; //revert to default coloring
+            // Clear both timers on key up
+            clearTimeout(this.dashTimer);
+            clearTimeout(this.cooldownTimer);
+            this.dashTimer = null;
+            this.cooldownTimer = null;            
         }
     }
 
@@ -261,5 +317,6 @@ export class Player extends Character{
         super.destroy();
     }
 }
+
 
 export default Player;
