@@ -32,10 +32,14 @@ export class GameEnv {
      * @property {Object} currentLevel - used by GameControl
      * @property {Array} gameObjects - used by GameControl
      * @property {boolean} isInverted - localstorage key, canvas filter property, used by GameControl
+     * @property {boolean} invincible - invincibility for the mario when stomping on Goomba
      * @property {number} gameSpeed - localstorage key, used by platformer objects
      * @property {number} backgroundHillsSpeed - used by background objects
      * @property {number} backgroundMountainsSpeed - used by background objects
+     * @property {number} backgroundCloudsSpeed - used by background objects
+     * @property {boolean} transitionHide - used to hide the transition screen
      * @property {number} gravity - localstorage key, used by platformer objects
+     * @property {Object} difficulty - localstorage key, used by GameControl
      * @property {number} innerWidth - used by platformer objects
      * @property {number} prevInnerWidth - used by platformer objects
      * @property {number} innerHeight - used by platformer objects
@@ -54,19 +58,25 @@ export class GameEnv {
     static gameSpeed = 2;
     static backgroundHillsSpeed = 0;
     static backgroundMountainsSpeed = 0;
+    static backgroundCloudsSpeed = 2;
+    static transitionHide = false;
     static gravity = 3;
+    static difficulty = "normal";
     static innerWidth;
     static prevInnerWidth;
     static innerHeight;
     static top;
     static bottom;
     static prevBottom;
+    static invincible = false;
+
+
     
     // Make the constructor throws an error, or effectively make it a private constructor.
     constructor() {
         throw new Error('GameEnv is a static class and cannot be instantiated.');
     }
-
+  
      /**
      * Setter for Top position, called by initialize in GameEnv
      * @static
@@ -78,7 +88,7 @@ export class GameEnv {
             this.top = header.offsetHeight;
         }
     }
-
+  
     /**
      * Setter for Bottom position, called by resize in GameEnv
      * @static
@@ -88,7 +98,7 @@ export class GameEnv {
         this.bottom =
         this.top + this.backgroundHeight;
     }
-
+  
     /**
      * Setup for Game Environment, called by transitionToLevel in GameControl
      * @static
@@ -104,33 +114,36 @@ export class GameEnv {
         this.setTop();
         //this.setBottom(); // must be called in platformer objects
     }
-
+  
     /**
      * Resize game objects, called by resize in GameControl
      * @static
      */    
     static resize() {
         GameEnv.initialize();  // Update GameEnv dimensions
-
+  
         // Call the sizing method on all game objects
         for (var gameObject of GameEnv.gameObjects){
             gameObject.size();
         }
     }
-
+  
     /**
      * Update, serialize, and draw game objects, called by update in GameControl
      * @static
      */
     static update() {
         // Update game state, including all game objects
-        for (const gameObject of GameEnv.gameObjects) {
-            gameObject.update();
-            gameObject.serialize();
-            gameObject.draw();
+        // if statement prevents game from updating upon player death
+        if (GameEnv.player == null || GameEnv.player.isDying == false) {
+            for (const gameObject of GameEnv.gameObjects) {
+                gameObject.update();
+                gameObject.serialize();
+                gameObject.draw();
+            } 
         }
     }
-
+  
     /**
      * Destroy game objects, called by destroy in GameControl
      * @static
@@ -143,7 +156,7 @@ export class GameEnv {
         }
         GameEnv.gameObjects = [];
     }
-
+  
     /**
      * Set "canvas filter property" between inverted and normal, called by setInvert in GameControl
      * @static
@@ -159,6 +172,11 @@ export class GameEnv {
             }
         }
     }
-}
-
-export default GameEnv;
+  
+    static PlayerPosition() {
+      let playerX = 0;
+      let playerY = 0;
+    }
+  }
+  
+  export default GameEnv;
