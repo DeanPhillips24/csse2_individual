@@ -15,7 +15,7 @@ import Socket from './Multiplayer.js';
  * 
  * @extends Character
  */
-export class Player extends Character{
+export class Player extends Character {
     // instantiation: constructor sets up player object 
     constructor(canvas, image, data, widthPercentage = 0.3, heightPercentage = 0.8) {
         super(canvas, image, data, widthPercentage, heightPercentage);
@@ -42,6 +42,8 @@ export class Player extends Character{
         this.transitionHide = false;
         this.shouldBeSynced = true;
         this.isDying = false;
+        this.isDyingR = false;
+        this.timer = false;
 
         this.name = GameEnv.userID;
     }
@@ -76,6 +78,27 @@ export class Player extends Character{
         return result;
     }
 
+    goombaCollision() {
+        if (this.timer === false) {
+            this.timer = true;
+            if (GameEnv.difficulty === "normal" || GameEnv.difficulty === "hard") {
+                this.canvas.style.transition = "transform 0.5s";
+                this.canvas.style.transform = "rotate(-90deg) translate(-26px, 0%)";
+                playPlayerDeath();
+
+                if (this.isDying == false) {
+                    this.isDying = true;
+                    setTimeout(async() => {
+                        await GameControl.transitionToLevel(GameEnv.levels[GameEnv.levels.indexOf(GameEnv.currentLevel)]);
+                        console.log("level restart")
+                        this.isDying = false;
+                    }, 900); 
+                }
+            } else if (GameEnv.difficulty === "easy") {
+                this.x += 10;
+            }
+        }
+    }
     /**
      * This helper method that acts like an animation manager. Frames are set according to player events.
      *  - Sets the animation of the player based on the provided key.
@@ -112,10 +135,22 @@ export class Player extends Character{
      * This method overrides Character.update, which overrides GameObject.update. 
      * @override
      */
+
     update() {
         //Update the Player Position Variables to match the position of the player
         GameEnv.PlayerPosition.playerX = this.x;
         GameEnv.PlayerPosition.playerY = this.y;
+
+        // GoombaBounce deals with player.js and goomba.js
+        if (GameEnv.goombaBounce === true) {
+            GameEnv.goombaBounce = false;
+            this.y = this.y - 100;
+        }
+
+        if (GameEnv.goombaBounce1 === true) {
+            GameEnv.goombaBounce1 = false; 
+            this.y = this.y - 250
+        } 
 
         // Player moving right 
         if (this.isActiveAnimation("a")) {
@@ -148,6 +183,9 @@ export class Player extends Character{
         let tubeX = (.80 * GameEnv.innerWidth)
         if (this.x >= tubeX && this.x <= GameEnv.innerWidth) {
             this.x = tubeX - 1;
+
+            GameEnv.backgroundHillsSpeed = 0;
+            GameEnv.backgroundMountainsSpeed = 0;
         }
 
         //Prevent Player from Leaving from Screen
@@ -160,6 +198,12 @@ export class Player extends Character{
 
         // Perform super update actions
         super.update();
+
+        // To put mario in the air after stepping on the goomba
+        if (GameEnv.goombaBoost === true) {
+            GameEnv.goombaBoost = false;
+            this.y = this.y - 150;
+        }
     }
 
     /**
@@ -214,114 +258,84 @@ export class Player extends Character{
             this.movement.right = true;
         }
 
-        // Goomba left/right collision
-        if (["goomba", "flyingGoomba"].includes(this.collisionData.touchPoints.other.id)) {
-            // Collision with the left side of the Enemy
-            if (this.collisionData.touchPoints.other.left && GameEnv.invincible === false) {
-
-                //Animate player death
-                this.canvas.style.transition = "transform 0.5s";
-                this.canvas.style.transform = "rotate(-90deg) translate(-26px, 0%)";
-
-                if (GameEnv.difficulty === "easy") {
-                    this.x -= 10;
-                } else {
-                    //Reset Player to Beginning
-                    playPlayerDeath();
-
-                    if (this.isDying == false) {
-                        this.isDying = true;
-                        setTimeout(async() => {
-                            await GameControl.transitionToLevel(GameEnv.levels[GameEnv.levels.indexOf(GameEnv.currentLevel)]);
-                            console.log("level restart")
-                            this.isDying = false;
-                        }, 700); 
-                    }   
-
-                if (this.isDying === false) {
-                    this.isDying = true;
-                    // restart current level after delay
-                    setTimeout(async() => {
-                        await GameControl.transitionToLevel(GameEnv.levels[GameEnv.levels.indexOf(GameEnv.currentLevel)]);
-                        this.isDying = false;
-                    }, 700); 
-                }   
-            }
-
-            }    
-        }
-        // Goomba left/right collision
-        /* if (["goomba", "flyingGoomba"].includes(this.collisionData.touchPoints.other.id)) {
-            // Collision with the left side of the Enemy
+        if (this.collisionData.touchPoints.other.id === "tree") {
+            // Collision with the left side of the tree
             if (this.collisionData.touchPoints.other.left) {
-
-                //Animate player death
-                this.canvas.style.transition = "transform 0.5s";
-                this.canvas.style.transform = "rotate(-90deg) translate(-26px, 0%)";
-
-                if (GameEnv.difficulty === "easy") {
-                    this.x -= 10;
-                } else {
-                    //Reset Player to Beginning
-                    playPlayerDeath();
-                    if (this.isDying == false) {
-                        this.isDying = true;
-                        setTimeout(async() => {
-                            await GameControl.transitionToLevel(GameEnv.levels[GameEnv.levels.indexOf(GameEnv.currentLevel)]);
-                            console.log("level restart")
-                            this.isDying = false;
-                        }, 700); 
-                    }   
-                    //GameControl.transitionToLevel(GameEnv.levels[GameEnv.levels.indexOf(GameEnv.currentLevel)]);
-                }
+                this.movement.right = false;
             }
-            // Collision with the right side of the Enemy
+            // Collision with the right side of the tree
             if (this.collisionData.touchPoints.other.right) {
-            //Animate player death
-                this.canvas.style.transition = "transform 0.5s";
-                this.canvas.style.transform = "rotate(90deg) translate(26px, 0%)";
-                if (["normal","hard"].includes(GameEnv.difficulty)) {
-                if (GameEnv.difficulty === "easy") {
-                    this.x += 10;
-                } else {
-                    //Reset Player to Beginning
-                    // if statement prevents timeout from running multiple times
-                    if (this.isDying == false) {
-                        this.isDying = true;
-                        setTimeout(async() => {
-                            await GameControl.transitionToLevel(GameEnv.levels[GameEnv.levels.indexOf(GameEnv.currentLevel)]);
-                            console.log("level restart")
-                            this.isDying = false;
-                        }, 700); 
-                    }       
-                    //GameControl.transitionToLevel(GameEnv.levels[GameEnv.levels.indexOf(GameEnv.currentLevel)]);
-                }} else {
-                    this.x -= 10;
-                    playPlayerDeath();
-                    GameControl.transitionToLevel(GameEnv.levels[GameEnv.levels.indexOf(GameEnv.currentLevel)]);
-                }
+                this.movement.left = false;
             }
-        } */
+            // Collision with the top of the player
+            if (this.collisionData.touchPoints.other.bottom) {
+                this.x = this.collisionData.touchPoints.other.x;
+                this.gravityEnabled = false; // stop gravity
+                // Pause for two seconds
+                setTimeout(() => {   
+                    this.gravityEnabled = true;
+                    setTimeout(() => { // move to end of screen for end of game detection
+                        this.x = GameEnv.innerWidth + 1;
+                    }, 500);
+                }, 500);
+            }
+        } else {
+            // Reset movement flags if not colliding with a tree
+            this.movement.left = true;
+            this.movement.right = true;
+        }
+
+        // Checks if collision touchpoint id is either "goomba" or "flyingGoomba"
+        if (this.collisionData.touchPoints.other.id === "goomba" || this.collisionData.touchPoints.other.id === "flyingGoomba") {
+            if (GameEnv.invincible === false) {
+                GameEnv.goombaInvincible = true;
+                // Collision with the left side of the Enemy
+                if (this.collisionData.touchPoints.other.left && !this.collisionData.touchPoints.other.bottom && !this.collisionData.touchPoints.other.top && GameEnv.invincible === false && this.timer === false) {
+                    setTimeout(this.goombaCollision.bind(this), 50);
+                } else if (this.collisionData.touchPoints.other.right && !this.collisionData.touchPoints.other.bottom && !this.collisionData.touchPoints.other.top && GameEnv.invincible === false && this.timer === false) {
+                    setTimeout(this.goombaCollision.bind(this), 50);
+                }
+
+                // Collision with the right side of the Enemy
+            }
+        } 
+
+        if (this.collisionData.touchPoints.other.id === "mushroom") {
+            GameEnv.destroyedMushroom = true;
+            this.canvas.style.filter = 'invert(1)';
+        
+            setTimeout(() => {
+                this.canvas.style.filter = 'invert(0)';
+            }, 2000); // 2000 milliseconds = 2 seconds
+        }
+
+        //if (GameEnv.destroyedMushroom === true) {
+            //GameEnv.playMessage = true;
+        //}
+         
+
         if (this.collisionData.touchPoints.other.id === "jumpPlatform") {
-            // Player is on top of the Jump platform
             if (this.collisionData.touchPoints.other.left) {
                 this.movement.right = false;
                 this.gravityEnabled = true;
+                this.y -= GameEnv.gravity; // allows movemnt on platform, but climbs walls
+
                 // this.x -= this.isActiveAnimation("s") ? this.moveSpeed : this.speed;  // Move to left
 
             }
             if (this.collisionData.touchPoints.other.right) {
                 this.movement.left = false;
                 this.gravityEnabled = true;
+                this.y -= GameEnv.gravity; // allows movemnt on platform, but climbs walls
+ 
                 // this.x += this.isActiveAnimation("s") ? this.moveSpeed : this.speed;  // Move to right
             }
             if (this.collisionData.touchPoints.this.top) {
                 this.movement.down = false; // enable movement down without gravity
                 this.gravityEnabled = false;
-                // this.y -= GameEnv.gravity;
                 this.setAnimation(this.directionKey); // set animation to direction
-            }
-        }
+            }}
+        
         // Fall Off edge of Jump platform
         else if (this.movement.down === false) {
             this.movement.down = true;          
@@ -329,6 +343,9 @@ export class Player extends Character{
         }
     }
     
+    
+    
+
     /**
      * Handles the keydown event.
      * This method checks the pressed key, then conditionally:
@@ -338,18 +355,30 @@ export class Player extends Character{
      *
      * @param {Event} event - The keydown event.
      */    
+    
     handleKeyDown(event) {
         if (this.playerData.hasOwnProperty(event.key)) {
             const key = event.key;
             if (!(event.key in this.pressedKeys)) {
+                //If both 'a' and 'd' are pressed, then only 'd' will be inputted
+                //Originally if this is deleted, player would stand still. 
+                if (this.pressedKeys['a'] && key === 'd') {
+                    delete this.pressedKeys['a']; // Remove "a" key from pressedKeys
+                    return; //(return) = exit early
+                } else if (this.pressedKeys['d'] && key === 'a') {
+                    // If "d" is pressed and "a" is pressed afterward, ignore "a" key
+                    return;
+                }
                 this.pressedKeys[event.key] = this.playerData[key];
                 this.setAnimation(key);
                 // player active
                 this.isIdle = false;
                 GameEnv.transitionHide = true;
             }
+
             // dash action on
             if (this.isKeyActionDash(key)) {
+                GameEnv.dash = true;
                 this.canvas.style.filter = 'invert(1)';
             }
             // parallax background speed starts on player movement
@@ -388,6 +417,7 @@ export class Player extends Character{
             // dash action off
             if (this.isKeyActionDash(key)) {
                 this.canvas.style.filter = 'invert(0)';
+                GameEnv.dash = false;
             } 
             // parallax background speed halts on key up
             if (this.isKeyActionLeft(key) || this.isKeyActionRight(key) || this.isKeyActionDash(key)) {
@@ -397,6 +427,5 @@ export class Player extends Character{
         }
     }
 }
-
 
 export default Player;

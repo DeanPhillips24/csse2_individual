@@ -73,6 +73,7 @@ export class FlyingGoomba extends Character {
                 this.immune = 1;
         } else if (GameEnv.difficulty === "impossible") {
                 this.canvas.style.filter = 'brightness(1000%)';
+                this.canvas.style.transform = "rotate(180deg)"
                 this.immune = 1;
         }
 
@@ -88,13 +89,31 @@ export class FlyingGoomba extends Character {
             }
         }
         if (this.collisionData.touchPoints.other.id === "player") {
+            this.speed = 0;
             // Collision: Top of Goomba with Bottom of Player
-            if (this.collisionData.touchPoints.other.bottom && this.immune === 0) {
-                this.x = GameEnv.innerWidth + 1;
+            console.log(this.collisionData.touchPoints.other.bottom + 'bottom')
+            console.log(this.collisionData.touchPoints.other.top + "top")
+            console.log(this.collisionData.touchPoints.other.right + "right")
+            console.log(this.collisionData.touchPoints.other.left + "left")
+            
+            if (this.collisionData.touchPoints.other.bottom && this.immune == 0) {
+                GameEnv.invincible = true;
+                this.speed = 0;
                 playGoombaDeath();
-                this.destroy();
+
+                setTimeout((function() {
+                    GameEnv.invincible = false;
+                    this.destroy();
+                }).bind(this), 1500);
+
             }
-        }    
+        }
+
+        if (this.collisionData.touchPoints.other.id === "jumpPlatform") {
+            if (this.collisionData.touchPoints.other.left || this.collisionData.touchPoints.other.right) {
+                this.speed = -this.speed;            
+            }
+        }
     }
 }
 

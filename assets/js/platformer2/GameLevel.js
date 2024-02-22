@@ -36,6 +36,8 @@ class GameLevel {
     async load() {
         Socket.removeAllListeners("stateUpdate") //reset Socket Connections
         Socket.removeAllListeners("disconnection")
+        Socket.removeAllListeners("leaderboardUpdate")
+        Socket.createListener("leaderboardUpdate",this.handleLeaderboardUpdates)
         Socket.createListener("stateUpdate",this.handleStateUpdates)
         Socket.createListener("disconnection",this.handleSocketDisconnect)
         try {
@@ -92,7 +94,7 @@ class GameLevel {
                  const canvas = document.createElement("canvas");
                  canvas.id = data.id;
                  document.querySelector("#canvasContainer").appendChild(canvas);
-                 console.log(canvas);
+                 //console.log(canvas);
                  // Create a new instance of the game object.
                 var obj1 =  new Character(canvas, image, obj.data, obj.xPercentage, obj.yPercentage, obj.minPosition);
                 
@@ -109,6 +111,16 @@ class GameLevel {
                 gameObj.destroy();
             }
         }
+    }
+
+    handleLeaderboardUpdates(data) {
+        const existingTimeScores = JSON.parse(localStorage.getItem('GtimeScores')) || [];
+        
+        existingTimeScores.push(data);
+        // Log the updated array to the console for debugging
+        console.log(existingTimeScores);
+        // Save the updated array to local storage
+        localStorage.setItem('GtimeScores', JSON.stringify(existingTimeScores));
     }
 }
 

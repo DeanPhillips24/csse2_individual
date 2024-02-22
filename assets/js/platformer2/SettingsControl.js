@@ -406,12 +406,13 @@ export class SettingsControl extends LocalStorage{
         chatBoxContainer.style.display = "none";
         chatBoxContainer.style.zIndex = 2;
         chatBoxContainer.style.position = "absolute";
-        chatBoxContainer.style.top = "50%";
+        chatBoxContainer.style.top = "70%";
         chatBoxContainer.style.left = "50%";
         chatBoxContainer.style.width = "50%";
-        chatBoxContainer.style.height = "50%";
-        chatBoxContainer.style.backgroundColor = "white";
-        chatBoxContainer.style.borderRadius = "5%";
+        chatBoxContainer.style.height = "30%";
+        chatBoxContainer.style.backgroundColor = "grey";
+        chatBoxContainer.style.opacity = "65%";
+        chatBoxContainer.style.borderRadius = "1%";
         chatBox.style.position = "relative";
         chatBox.style.resize = "both";
         chatBox.style.overflow = "auto";
@@ -443,6 +444,28 @@ export class SettingsControl extends LocalStorage{
         });
     
         div.append(button); // wrap button element in div
+        return div;
+    }
+
+    get playerCount(){
+        const div = document.createElement("div");
+        const text = document.createElement("p");
+        const button = document.createElement("button");
+
+        text.innerText = "1/10 players";
+        button.innerText = "check player count";
+
+        function update(d){
+            text.innerText = String(d)+"/10 players";
+        }
+        Socket.createListener("playerCount",update);
+        button.addEventListener("click",()=>{
+            Socket.removeAllListeners("playerCount")
+            Socket.createListener("playerCount",update);
+            Socket.socket.emit("checkPlayers","");
+        });
+        div.append(text);
+        div.append(button);
         return div;
     }
 
@@ -493,6 +516,10 @@ export class SettingsControl extends LocalStorage{
         // Get/Construct HTML button and event update for multiplayer
         var chatButton = settingsControl.chatButton;
         document.getElementById("sidebar").append(chatButton);
+
+         // Get/Construct HTML button and event update for multiplayer
+         var playerCount = settingsControl.playerCount;
+         document.getElementById("sidebar").append(playerCount);
 
 
         // Listener, isOpen, and function for sidebar open and close
