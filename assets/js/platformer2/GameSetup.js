@@ -196,6 +196,7 @@ const GameSetup = {
         clouds : { src: "/images/platformer/backgrounds/clouds.png"},
         space: { src: "/images/platformer/backgrounds/planet.jpg" },
         castles: { src: "/images/platformer/backgrounds/castles.png" },
+        lab: { src: "/images/gameimages/widelab.png"},
         loading: { src: "/images/platformer/backgrounds/greenscreen.png" },
         complete: { src: "/images/platformer/backgrounds/OneStar.png" },
         complete2: { src: "/images/platformer/backgrounds/TwoStar.png" },
@@ -243,6 +244,16 @@ const GameSetup = {
           d: { row: 2, frames: 3, idleFrame: { column: 1, frames: 0 } }, // Left Movement 
           runningLeft: { row: 5, frames: 3, idleFrame: {column: 1, frames: 0} },
           runningRight: { row: 4, frames: 3, idleFrame: {column: 1, frames: 0} },
+        },
+        mortensen: {
+          type: 1,
+          src: "/images/gameimages/mortspritesheet2.png",
+          width: 19,
+          height: 27, 
+          w: { row: 3, frames: 4, idleFrame: { column: 1, frames: 0} },
+          a: { row: 2, frames: 4, idleFrame: { column: 1, frames: 0 } },
+          s: { row: 0, frames: 4, idleFrame: { coluumn: 1, frames: 0} },
+          d: { row: 1, frames: 4, idleFrame: { column: 1, frames: 0 } }
         }
       },
       enemies: {
@@ -332,7 +343,30 @@ const GameSetup = {
           clearInterval(interval2);
         }
         }, 3000);
-      
+        
+
+        // Mortensen Lab Game Level definition...
+        const mortGameObjects = [
+          // GameObject(s), the order is important to z-index...
+          { name: 'lab', id: 'background', class: Background, data: this.assets.backgrounds.lab },
+          { name: 'bricks', id: 'platform', class: Platform, data: this.assets.platforms.bricks },
+          { name: 'blocks', id: 'jumpPlatform', class: BlockPlatform, data: this.assets.platforms.block, xPercentage: 0.2, yPercentage: 0.85 },
+          { name: 'blocks', id: 'jumpPlatform', class: BlockPlatform, data: this.assets.platforms.block, xPercentage: 0.2368, yPercentage: 0.85 },
+          { name: 'blocks', id: 'jumpPlatform', class: BlockPlatform, data: this.assets.platforms.block, xPercentage: 0.5, yPercentage: 0.85 },
+          { name: 'blocks', id: 'jumpPlatform', class: BlockPlatform, data: this.assets.platforms.block, xPercentage: 0.5368, yPercentage: 0.85 },
+          { name: 'goomba', id: 'goomba', class: Goomba, data: this.assets.enemies.goomba, xPercentage: 0.3, minPosition: 0.05},
+          { name: 'goomba', id: 'goomba', class: Goomba, data: this.assets.enemies.goomba, xPercentage:  0.5, minPosition: 0.3 },
+          { name: 'mushroom', id: 'mushroom', class: Mushroom, data: this.assets.enemies.mushroom, xPercentage: 0.09},
+          { name: 'goombaSpecial', id: 'goomba', class: Goomba, data: this.assets.enemies.goomba, xPercentage:  0.75, minPosition: 0.5 }, //this special name is used for random event 2 to make sure that only one of the Goombas ends the random event
+          { name: 'flyingGoomba', id: 'flyingGoomba', class: FlyingGoomba, data: this.assets.enemies.flyingGoomba, xPercentage:  0.5, minPosition:  0.05},
+          { name: 'flyingGoomba', id: 'flyingGoomba', class: FlyingGoomba, data: this.assets.enemies.flyingGoomba, xPercentage:  0.9, minPosition: 0.5},
+          { name: 'mortensen', id: 'player', class: Player, data: this.assets.players.mortensen },
+          { name: 'tube', id: 'tube', class: Tube, data: this.assets.obstacles.tube },
+          { name: 'complete', id: 'background', class: BackgroundTransitions,  data: this.assets.backgrounds.complete },
+          ];
+          // Mortensen Lab Game Level added to the GameEnv ...
+          new GameLevel( {tag: "avenida", callback: this.playerOffScreenCallBack, objects: mortGameObjects } );
+          
         // Home screen added to the GameEnv ...
         new GameLevel( {tag: "start", callback: this.startGameCallback } );
         const homeGameObjects = [
