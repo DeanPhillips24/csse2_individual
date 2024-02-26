@@ -5,7 +5,7 @@ description: This is the snake game
 toc: True
 comments: True
 courses: {'csse': {'week': 2}}
-type: hacks
+type: ccc
 ---
 
 <style>
