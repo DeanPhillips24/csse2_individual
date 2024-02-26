@@ -5,6 +5,7 @@ description: Blog about the Final
 type: ccc
 courses: { csse: {week: 24} }
 image: /images/gameimages/antoine.jpg
+comments: true
 ---
 
 <div>
