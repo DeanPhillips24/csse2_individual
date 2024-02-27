@@ -1,7 +1,7 @@
-import Character from './Character.js';
-import GameEnv from './GameEnv.js';
-import playGoombaDeath from './Audio.js';
-import GameControl from './GameControl.js';
+import Character from '../platformer3/Character.js';
+import GameEnv from '../platformer3/GameEnv.js';
+// import playGoombaDeath from '../platformer3/Audio.js';
+import GameControl from '../platformer3/GameControl.js';
 
 export class Antoine extends Character {
     // constructors sets up Character object 
