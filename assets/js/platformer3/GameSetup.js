@@ -173,7 +173,7 @@ const GameSetup = {
         tube: { src: "/images/platformer/obstacles/tube.png" },
         coin: { src: "/images/platformer/obstacles/coin.png"},
         tree: { src: "/images/platformer/obstacles/tree.png"},
-        diploma: { src: "/images/platformer/obstacles/diploma.png"},
+        door: { src: "/images/gameimages/door2.png"}
       },
       platforms: {
         grass: { src: "/images/platformer/platforms/grass.png" },
